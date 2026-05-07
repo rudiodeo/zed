@@ -2,7 +2,7 @@ mod application_menu;
 pub mod collab;
 mod onboarding_banner;
 mod plan_chip;
-mod title_bar_settings;
+pub mod title_bar_settings;
 mod update_version;
 
 use crate::application_menu::{ApplicationMenu, show_menus};
@@ -84,8 +84,43 @@ pub fn init(cx: &mut App) {
             return;
         };
         let multi_workspace = workspace.multi_workspace().cloned();
-        let item = cx.new(|cx| TitleBar::new("title-bar", workspace, multi_workspace, window, cx));
-        workspace.set_titlebar_item(item.into(), window, cx);
+        let should_show = TitleBarSettings::get_global(cx).show;
+        if should_show {
+            let item = cx.new(|cx| {
+                TitleBar::new("title-bar", workspace, multi_workspace.clone(), window, cx)
+            });
+            workspace.set_titlebar_item(item.into(), window, cx);
+        }
+
+        let value = multi_workspace.clone();
+        cx.observe_global_in::<settings::SettingsStore>(window, move |workspace, window, cx| {
+            let should_show = TitleBarSettings::get_global(cx).show;
+            if should_show {
+                if workspace.titlebar_item().is_none() {
+                    let item = cx
+                        .new(|cx| TitleBar::new("title-bar", workspace, value.clone(), window, cx));
+                    workspace.set_titlebar_item(item.into(), window, cx);
+                }
+            } else {
+                workspace.clear_titlebar_item(window, cx);
+            }
+        })
+        .detach();
+
+        cx.observe_window_bounds(window, move |workspace, window, cx| {
+            let should_show = TitleBarSettings::get_global(cx).show;
+            if should_show {
+                if workspace.titlebar_item().is_none() {
+                    let item = cx.new(|cx| {
+                        TitleBar::new("title-bar", workspace, multi_workspace.clone(), window, cx)
+                    });
+                    workspace.set_titlebar_item(item.into(), window, cx);
+                }
+            } else {
+                workspace.clear_titlebar_item(window, cx);
+            }
+        })
+        .detach();
 
         workspace.register_action(|workspace, _: &SimulateUpdateAvailable, _window, cx| {
             if let Some(titlebar) = workspace

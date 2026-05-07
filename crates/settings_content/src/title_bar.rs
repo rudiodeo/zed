@@ -81,6 +81,10 @@ impl From<String> for WindowButtonLayoutContent {
 #[with_fallible_options]
 #[derive(Clone, PartialEq, Default, Serialize, Deserialize, JsonSchema, MergeFrom, Debug)]
 pub struct TitleBarSettingsContent {
+    /// Controls when the title bar is visible: "true" | "false"".
+    ///
+    /// Default: "true"
+    pub show: Option<bool>,
     /// Whether to show git status indicators on the branch icon in the title bar.
     /// When enabled, the branch icon changes to reflect the current repository
     /// status (e.g. modified, added, deleted, or conflict).
@@ -95,15 +99,15 @@ pub struct TitleBarSettingsContent {
     ///
     /// Default: true
     pub show_user_picture: Option<bool>,
-    /// Whether to show the branch name button in the titlebar.
+    /// Whether to show the branch name button in the title bar.
     ///
     /// Default: true
     pub show_branch_name: Option<bool>,
-    /// Whether to show the project host and name in the titlebar.
+    /// Whether to show the project host and name in the title bar.
     ///
     /// Default: true
     pub show_project_items: Option<bool>,
-    /// Whether to show the sign in button in the title bar.
+    /// Whether to show the sign-in button in the title bar.
     ///
     /// Default: true
     pub show_sign_in: Option<bool>,
